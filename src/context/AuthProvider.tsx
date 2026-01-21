@@ -20,7 +20,6 @@ import { AuthResponse } from "@/types/AuthResponse";
 export const AuthProvider = ({ children }: PropsUrl) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [hasClient, setHasClient] = useState<boolean | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -34,7 +33,6 @@ export const AuthProvider = ({ children }: PropsUrl) => {
       if (!valid) {
         setIsAuthenticated(false);
         setUserRole(null);
-        setHasClient(null);
         setLoading(false);
         return { success: false, message: "Token inválido o expirado" };
       }
@@ -64,7 +62,6 @@ export const AuthProvider = ({ children }: PropsUrl) => {
       setIsAuthenticated(false);
       setUserRole(null);
       setUserName(null);
-      setHasClient(null);
       setLoading(false);
       const message = error.response?.data?.message || "Error inesperado en autenticación";
       return { success: false, message };
@@ -131,7 +128,6 @@ export const AuthProvider = ({ children }: PropsUrl) => {
     setIsAuthenticated(false);
     setUserRole(null);
     setUserName(null);
-    setHasClient(null);
   };
 
   return (
@@ -139,7 +135,6 @@ export const AuthProvider = ({ children }: PropsUrl) => {
       value={{
         isAuthenticated,
         userRole,
-        hasClient,
         userName,
         login,
         clientUserRegister,
