@@ -1,22 +1,7 @@
 import axiosInstance from "@/common/utils/axios";
 import { API_USERS_GROUP } from "./APIs";
-import { CreateUserDto, UpdateUserDto } from "../types/user";
+import { UpdateUserDto } from "../types/user";
 
-/**
- * Crea un nuevo usuario.
- * @param {CreateUserDto} payload - Datos del usuario.
- * @returns {Promise<any>} Respuesta del servidor.
- */
-export const createUser = async (payload: CreateUserDto) => {
-  const response = await axiosInstance.post(API_USERS_GROUP.createUser, payload);
-  return response.data;
-};
-
-/**
- * Obtiene todos los usuarios según filtros.
- * @param {Object} params - Parámetros de búsqueda.
- * @returns {Promise<any>} Lista de usuarios.
- */
 export const findAll = async (params: {
   page?: number;
   role?: string;
