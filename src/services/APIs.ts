@@ -3,10 +3,9 @@
  */
 export const API_AUTH_GROUP = {
   authentication: '/auth/login',
-  register: '/auth/register',
   logout: '/auth/logout',
   refreshToken: '/auth/refresh',
-  validateToken: '/auth/validate-token'
+  validateToken: '/auth/validate-token',
 };
 
 /**
@@ -23,6 +22,16 @@ export const API_USERS_GROUP = {
   updateUser: (id: string) => `/users/update/${id}`,
   deleteUser: (id: string) => `/users/delete/${id}`,
   restoreUser: (id: string) => `/users/restore/${id}`,
+};
+
+/**
+ * Grupo de rutas para la gestion de roles.
+ */
+export const API_ROLES_GROUP = {
+  createRole: "/roles/create",
+  findAll: "/roles",
+  updateRole: (id: string) => `/roles/update/${id}`,
+  deleteRole: (id: string) => `/roles/delete/${id}`,
 };
 
 

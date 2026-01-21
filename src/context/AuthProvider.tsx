@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { checkTokenValidity, loginUser, logoutUser, registerUser } from "@/services/authService";
-import { LoginCredentials, RegisterCredentials } from "@/types/auth";
+import { checkTokenValidity, loginUser, logoutUser } from "@/services/authService";
+import { LoginCredentials } from "@/types/auth";
 import { PropsUrl } from "@/router/guards/typeGuards";
 import { AuthContext } from "./AuthContext";
 // import { checkExistingClient } from "@/services/clientsService";
@@ -39,13 +39,10 @@ export const AuthProvider = ({ children }: PropsUrl) => {
       const response = await findOwnUser();
       const user = response?.data || {};
       const rawRole =
-        user.role?.description?.toLowerCase() ||
-        user.role?.name?.toLowerCase() ||
-        user.rol?.toLowerCase() ||
-        "user";
+        user.rol.toLowerCase() ? user.rol.toLowerCase() : "adviser";
 
       setUserRole(rawRole);
-      setUserName(user.name ?? user.user_name ?? user.username ?? null);
+      setUserName(user.user_name);
       setIsAuthenticated(true);
 
       // if (rawRole === 'user') {
@@ -82,7 +79,7 @@ export const AuthProvider = ({ children }: PropsUrl) => {
 
       if (data?.access_token) {
         // 🔹 Guardar token correctamente (solo el string)
-        localStorage.setItem("token", data.access_token);
+        localStorage.setItem("access_token", data.access_token);
 
         await checkAuth();
         return { success: true, message: "Inicio de sesión exitoso" };
@@ -96,35 +93,11 @@ export const AuthProvider = ({ children }: PropsUrl) => {
   };
 
   /**
-   * Registra a un cliente como usuario.
-   *
-   * @param {RegisterCredentials} payload Datos de registro.
-   * @returns {Promise<boolean>} `true` si el registro fue exitoso.
-   */
-  const clientUserRegister = async (payload: RegisterCredentials): Promise<AuthResponse> => {
-    try {
-      const data = await registerUser(payload);
-      if (data?.access_token) {
-        // ⚡ Guardar token limpio en localStorage
-        localStorage.setItem("token", data.access_token);
-
-        await checkAuth();
-        return { success: true, message: "Registro exitoso" };
-      } else {
-        return { success: false, message: "Error al registrar usuario" };
-      }
-    } catch (error: any) {
-      const message = error.response?.data?.message || "Error en el registro";
-      return { success: false, message };
-    }
-  };
-
-
-  /**
    * Cierra la sesión actual del usuario.
    */
   const logout = () => {
-    logoutUser()
+    logoutUser();
+    localStorage.removeItem("access_token");
     setIsAuthenticated(false);
     setUserRole(null);
     setUserName(null);
@@ -137,7 +110,6 @@ export const AuthProvider = ({ children }: PropsUrl) => {
         userRole,
         userName,
         login,
-        clientUserRegister,
         logout,
         loading,
         checkAuth

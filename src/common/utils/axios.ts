@@ -9,7 +9,7 @@ const axiosInstance = axios.create({
 // --- 🔹 Interceptor de REQUEST: añade el token a todas las peticiones ---
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("success_token");
 
     // 🔹 Si el token es tipo objeto JSON, lo arreglamos
     if (token && token !== "[object Object]") {
@@ -71,7 +71,7 @@ axiosInstance.interceptors.response.use(
       try {
         const newToken = await refresh_token(); // 🔄 pide nuevo token
         if (newToken) {
-          localStorage.setItem("token", newToken);
+          localStorage.setItem("success_token", newToken);
           axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
           originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
         }
@@ -81,7 +81,7 @@ axiosInstance.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
         logoutUser();
-        localStorage.removeItem("token");
+        localStorage.removeItem("success_token");
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

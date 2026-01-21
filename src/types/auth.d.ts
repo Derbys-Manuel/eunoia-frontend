@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { fullRegisterSchema, LoginSchema, RegisterSchema } from "../schemas/authSchemas";
 
 export type LoginCredentials = z.infer<typeof LoginSchema>;

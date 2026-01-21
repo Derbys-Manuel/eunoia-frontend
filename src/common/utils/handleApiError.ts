@@ -9,7 +9,7 @@ type ApiErrorShape = {
 
 export function parseApiError(
   error: unknown,
-  fallbackMessage = "OcurriИ un error inesperado."
+  fallbackMessage = "Ocurrio un error inesperado."
 ) {
   if (typeof error === "object" && error !== null) {
     const axiosError = error as ApiErrorShape;
