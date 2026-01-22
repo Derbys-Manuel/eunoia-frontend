@@ -17,7 +17,7 @@ import { RoutesPaths } from "../router/config/routesPaths";
 import { errorResponse, successResponse } from "@/common/utils/response";
 import FormField from "./ui/formField";
 import FieldError from "./ui/FieldError";
-import img from "..//assets/images/imag.png"
+import img from "../assets/images/imag.png";
 
 function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const [submitting, setSubmitting] = useState(false);
@@ -38,11 +38,10 @@ function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
     setSubmitting(true);
     try {
       const response = await login(data);
+      console.log(response);
       if (response.success) {
         showFlash(successResponse(response.message));
         navigate(RoutesPaths.home, { replace: true });
-      } else {
-        showFlash(errorResponse(response.message));
       }
     } catch {
       showFlash(errorResponse("Credenciales inválidas o error de red"));
