@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { findAll } from "@/services/userService";
+import * as Dialog from "@radix-ui/react-dialog";
+
 
 type UserRow = {
   user_id: string;
@@ -13,6 +15,7 @@ type UserRow = {
 const PAGE_SIZE = 8;
 
 export default function UsersTable() {
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [users, setUsers] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -81,6 +84,12 @@ export default function UsersTable() {
           >
             Refresh
           </button>
+          <button
+            onClick={load}
+            className="h-9 rounded-lg border border-slate-700 bg-slate-900 px-3 text-sm text-slate-200 hover:border-white"
+          >
+            Create User
+          </button>
         </div>
         <p className="text-xs text-slate-100">
           {filtered.length} user{filtered.length === 1 ? "" : "s"}
@@ -135,11 +144,11 @@ export default function UsersTable() {
                       : user.user_deleted || "-";
                 return (
                   <tr key={user.user_id} className="hover:bg-slate-900/60">
-                    <td className="px-4 py-3 text-slate-200">{nameLabel}</td>
-                    <td className="px-4 py-3 text-slate-300">{emailLabel}</td>
-                    <td className="px-4 py-3 text-slate-300">{roleLabel}</td>
-                    <td className="px-4 py-3 text-slate-300">{statusLabel}</td>
-                    <td className="px-4 py-3 text-slate-300">{createdAtLabel}</td>
+                    <td className="px-4 py-3 text-black">{nameLabel}</td>
+                    <td className="px-4 py-3 text-black">{emailLabel}</td>
+                    <td className="px-4 py-3 text-black">{roleLabel}</td>
+                    <td className="px-4 py-3 text-black">{statusLabel}</td>
+                    <td className="px-4 py-3 text-black">{createdAtLabel}</td>
                   </tr>
                 );
               })}
@@ -157,14 +166,14 @@ export default function UsersTable() {
             disabled={safePage === 1}
             className=" rounded-md cursor-pointer border border-slate-800 px-2 py-1 disabled:opacity-40"
           >
-            <span className="text-white">Prev</span>
+            <span className="text-black">Prev</span>
           </button>
           <button
             onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
             disabled={safePage === totalPages}
             className=" rounded-md cursor-pointer border border-slate-800 px-2 py-1 disabled:opacity-40"
           >
-            <span className="text-white">Next</span>
+            <span className="text-black">Next</span>
           </button>
         </div>
       </div>

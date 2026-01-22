@@ -31,7 +31,8 @@ export const loginUser = async (payload: LoginCredentials):Promise<AuthService> 
 export const checkTokenValidity = async () => {
   try {
     const response = await axiosInstance.get(API_AUTH_GROUP.validateToken);
-    return response.data.message === 'Token es válido';
+    const message = String(response.data?.message ?? "").toLowerCase();
+    return message.includes("token es valido") || message.includes("token es válido");
   } catch (error) {
     console.error("Token no válido o expirado", error);
     return false;

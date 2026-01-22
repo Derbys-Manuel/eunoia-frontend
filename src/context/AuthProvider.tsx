@@ -37,12 +37,19 @@ export const AuthProvider = ({ children }: PropsUrl) => {
         return { success: false, message: "Token inválido o expirado" };
       }
       const response = await findOwnUser();
-      const user = response?.data || {};
+      const user = response?.data ?? response ?? {};
+      console.log("Usuario autenticado:", user);
+      const rawRoleValue =
+        user?.rol ??
+        user?.role?.description ??
+        user?.role?.name ??
+        user?.role ??
+        user?.role?.code;
       const rawRole =
-        user.rol.toLowerCase() ? user.rol.toLowerCase() : "adviser";
+        typeof rawRoleValue === "string" ? rawRoleValue.toLowerCase() : "adviser";
 
       setUserRole(rawRole);
-      setUserName(user.user_name);
+      setUserName(user.user_name ?? user.name ?? user.email ?? null);
       setIsAuthenticated(true);
 
       // if (rawRole === 'user') {
