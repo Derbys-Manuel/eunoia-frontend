@@ -1,5 +1,6 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 import { logoutUser, refresh_token } from "@/services/authService";
+import { getAccessToken, setAccessToken, clearAccessToken } from "@/common/utils/tokenStore";
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api",
@@ -9,7 +10,7 @@ const axiosInstance = axios.create({
 // --- 🔹 Interceptor de REQUEST: añade el token a todas las peticiones ---
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem("access_token");
+    const token = getAccessToken();
 
     // 🔹 Si el token es tipo objeto JSON, lo arreglamos
     if (token && token !== "[object Object]") {
@@ -71,7 +72,7 @@ axiosInstance.interceptors.response.use(
       try {
         const newToken = await refresh_token(); // 🔄 pide nuevo token
         if (newToken) {
-          localStorage.setItem("access_token", newToken);
+          setAccessToken(newToken);
           axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
           originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
         }
@@ -81,7 +82,7 @@ axiosInstance.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
         logoutUser();
-        localStorage.removeItem("access_token");
+        clearAccessToken();
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

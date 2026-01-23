@@ -98,7 +98,9 @@ export default function HomePage() {
 			<SidebarInset>
 				<div className="flex h-12 items-center gap-2 border-b px-4">
 					<SidebarTrigger />
-					<div className="text-sm font-semibold">Dashboard</div>
+					<div className="text-sm font-semibold first-letter:uppercase">
+						{location.pathname === "/" ? <span>Dashboard</span> : location.pathname.split('/')}
+					</div>
 				</div>
 				<div className="p-6">
                     <Outlet />

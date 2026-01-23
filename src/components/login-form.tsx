@@ -6,7 +6,6 @@ import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Image from "@/components/image";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { LoginCredentials } from "@/types/auth";
@@ -17,7 +16,6 @@ import { RoutesPaths } from "../router/config/routesPaths";
 import { errorResponse, successResponse } from "@/common/utils/response";
 import FormField from "./ui/formField";
 import FieldError from "./ui/FieldError";
-import img from "../assets/images/imag.png";
 
 function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const [submitting, setSubmitting] = useState(false);
@@ -58,12 +56,6 @@ function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
       )}
       {...props}
     >
-      <Image
-        src={img}
-        alt="Eunoia"
-        fallback="/placeholder.png"
-        className="mx-auto w-full max-w-md max-h-[40vh] md:max-h-[70vh] object-contain"
-      />
       <Card className="w-full max-w-md shadow-2xl border-none">
         <CardHeader>
           <CardTitle className="font-mono text-xl mb-3 font-extrabold tracking-wide ">
@@ -109,7 +101,7 @@ function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
 
               <Button
                 type="submit"
-                className="w-full bg-sky-500 hover:bg-sky-700 text-white hover:scale-[1.02] cursor-pointer"
+                className="w-full bg-gray-600 hover:bg-sky-700 text-white hover:scale-[1.02] cursor-pointer"
                 disabled={submitting}
               >
                 {submitting ? "Cargando..." : "Iniciar Sesión"}
