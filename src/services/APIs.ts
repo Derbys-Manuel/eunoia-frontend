@@ -16,6 +16,7 @@ export const API_USERS_GROUP = {
   createUser: '/users/create',
   findAll: '/users/findAll',
   findActives: '/users/actives',
+  findDesactive: '/users/desactive',
   findOwnUser: '/users/me',
   findById: (id: string) => `/users/search/${id}`,
   findByEmail: (email: string) => `/users/email/${email}`,

@@ -3,9 +3,10 @@ import { checkTokenValidity, loginUser, logoutUser } from "@/services/authServic
 import { LoginCredentials } from "@/types/auth";
 import { PropsUrl } from "@/router/guards/typeGuards";
 import { AuthContext } from "./AuthContext";
-// import { checkExistingClient } from "@/services/clientsService";
 import { findOwnUser } from "@/services/userService";
 import { AuthResponse } from "@/types/AuthResponse";
+import { setAccessToken, clearAccessToken } from "@/common/utils/tokenStore";
+
 
 /**
  * Proveedor de autenticación.
@@ -52,13 +53,6 @@ export const AuthProvider = ({ children }: PropsUrl) => {
       setUserName(user.user_name ?? user.name ?? user.email ?? null);
       setIsAuthenticated(true);
 
-      // if (rawRole === 'user') {
-      //   const exists = await checkExistingClient();
-      //   setHasClient(exists);
-      // } else {
-      //   setHasClient(null);
-      // }
-
       setLoading(false);
       return { success: true, message: "Autenticación validada" };
     } catch (error: any) {
@@ -86,7 +80,7 @@ export const AuthProvider = ({ children }: PropsUrl) => {
 
       if (data?.access_token) {
         // 🔹 Guardar token correctamente (solo el string)
-        localStorage.setItem("access_token", data.access_token);
+        setAccessToken(data.access_token)
 
         await checkAuth();
         return { success: true, message: "Inicio de sesión exitoso" };
@@ -104,7 +98,7 @@ export const AuthProvider = ({ children }: PropsUrl) => {
    */
   const logout = () => {
     logoutUser();
-    localStorage.removeItem("access_token");
+    clearAccessToken();
     setIsAuthenticated(false);
     setUserRole(null);
     setUserName(null);
