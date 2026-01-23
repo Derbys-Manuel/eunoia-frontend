@@ -1,7 +1,6 @@
-import { Modal } from "@/components/modal";
+import { Dialog, DialogActions, DialogContent, DialogTitle, Button } from "@mui/material";
 import { UserForm } from "./UserForm";
 import { createUser, updateUser } from "../../../services/userService";
-import { Button } from "@/components/ui/button";
 
 type User = {
   id: string;
@@ -39,22 +38,26 @@ export default function ModalCreate({ open, onClose, onDone, mode, user }: Modal
   };
 
   return (
-    <Modal
-      isOpen={open}
-      onClose={onClose}
-      title={mode === "edit" ? "Editar Usuario" : "Crear Usuario"}
-      footer={
-        <>
-          <Button type="button" className="bg-white text-black border cursor-pointer hover:bg-gray-100 hover:scale-[1.02] transition-all" onClick={onClose}>
-            Cerrar
-          </Button>
-          <Button type="submit" form={formId} className="bg-black text-white hover:bg-gray-800 cursor-pointer hover:scale-[1.02] transition-all">
-            {mode === "edit" ? "Guardar cambios" : "Guardar"}
-          </Button>
-        </>
-      }
-    >
-      <UserForm formId={formId} user={user ?? undefined} onSubmit={handleSubmit} />
-    </Modal>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>{mode === "edit" ? "Editar Usuario" : "Crear Usuario"}</DialogTitle>
+
+      <DialogContent dividers>
+        <UserForm formId={formId} user={user ?? undefined} onSubmit={handleSubmit} />
+      </DialogContent>
+
+      <DialogActions>
+        <Button onClick={onClose} variant="outlined" sx={{ textTransform: "none" }}>
+          Cerrar
+        </Button>
+        <Button
+          type="submit"
+          form={formId}
+          variant="contained"
+          sx={{ textTransform: "none" }}
+        >
+          {mode === "edit" ? "Guardar cambios" : "Guardar"}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }

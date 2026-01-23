@@ -1,16 +1,38 @@
 import { useEffect, useMemo, useState } from "react";
-import { findAll, findActives, deleteUser, findDesactive, restoreUser } from "@/services/userService";
+import {
+  findAll,
+  findActives,
+  deleteUser,
+  findDesactive,
+  restoreUser,
+} from "@/services/userService";
 import ModalCreate from "./ModalCreate";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Checkbox } from "@/components/ui/checkbox";
 import { errorResponse, successResponse } from "@/common/utils/response";
 import { useFlashMessage } from "@/hooks/useFlashMessage";
+
+import {
+  Box,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  IconButton,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+} from "@mui/material";
+
 import { RotateCcw, Beer, Pencil } from "lucide-react";
 
 type UserRow = {
   user_id: string;
-  user_name: string ;
+  user_name: string;
   user_email: string;
   user_deleted: boolean;
   user_created_at: string;
@@ -30,6 +52,7 @@ export default function UsersTable() {
   const [mode, setMode] = useState<"create" | "edit">("create");
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [showUsersActive, setShowUsersActive] = useState(true);
+
   const { showFlash, clearFlash } = useFlashMessage();
 
   const load = async () => {
@@ -60,11 +83,12 @@ export default function UsersTable() {
     try {
       setLoading(true);
       setError(null);
+
       if (checked) {
         const res = await findActives({});
         const data: UserRow[] = Array.isArray(res) ? res : res?.data ?? [];
         setUsers(data);
-      } else { 
+      } else {
         const res = await findDesactive({});
         const data: UserRow[] = Array.isArray(res) ? res : res?.data ?? [];
         setUsers(data);
@@ -78,10 +102,10 @@ export default function UsersTable() {
   };
 
   const handleDeleteUser = async (userId: string) => {
-  clearFlash();
-  setLoading(true);
-  try {
-    const response = await deleteUser(userId);
+    clearFlash();
+    setLoading(true);
+    try {
+      const response = await deleteUser(userId);
       const ok = response?.success ?? true;
       if (ok) {
         showFlash(successResponse(response?.message ?? "Usuario eliminado"));
@@ -89,43 +113,46 @@ export default function UsersTable() {
       } else {
         showFlash(errorResponse(response?.message ?? "No se pudo eliminar el usuario"));
       }
-  } catch {
-    showFlash(errorResponse("Credenciales inválidas o error de red"));
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch {
+      showFlash(errorResponse("Credenciales inválidas o error de red"));
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const handleRestoreUser = async (userId: string) =>{
-  clearFlash();
-  setLoading(true);
-  try {
-    const res = await restoreUser(userId);
+  const handleRestoreUser = async (userId: string) => {
+    clearFlash();
+    setLoading(true);
+    try {
+      const res = await restoreUser(userId);
       const ok = res?.success ?? true;
-      if(ok){
+      if (ok) {
         showFlash(successResponse(res?.message ?? "Usuario restaurado"));
         await handleCheckboxChange(showUsersActive);
       } else {
         showFlash(errorResponse(res?.message ?? "No se pudo restaurar el usuario"));
       }
-} catch{
-	showFlash(errorResponse('Error al restaurar usuario'));
-}finally {
-	setLoading(false);
-}
-}
+    } catch {
+      showFlash(errorResponse("Error al restaurar usuario"));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filtered = useMemo(() => {
     const value = query.trim().toLowerCase();
     if (!value) return users;
+
     return users.filter((user) => {
-		const roleLabel = user.rol;
-		const nameLabel = user.user_name;
-		const emailLabel = user.user_email;
-		const stateLabel = user.user_deleted;
-		const createdAtLabel = user.user_created_at;
-		const haystack = [nameLabel, emailLabel, roleLabel, stateLabel, createdAtLabel].join(" ").toLowerCase();
-		return haystack.includes(value);
+      const roleLabel = user.rol;
+      const nameLabel = user.user_name;
+      const emailLabel = user.user_email;
+      const stateLabel = String(user.user_deleted);
+      const createdAtLabel = user.user_created_at;
+      const haystack = [nameLabel, emailLabel, roleLabel, stateLabel, createdAtLabel]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(value);
     });
   }, [query, users]);
 
@@ -139,7 +166,7 @@ const handleRestoreUser = async (userId: string) =>{
   }, [page, safePage]);
 
   return (
-    <div>
+    <Box>
       <ModalCreate
         open={openCreate}
         onClose={() => setOpenCreate(false)}
@@ -147,164 +174,205 @@ const handleRestoreUser = async (userId: string) =>{
         mode={mode}
         user={selectedUser}
       />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <input 
+
+      <Stack
+        direction={{ xs: "column", md: "row" }}
+        spacing={2}
+        alignItems={{ xs: "stretch", md: "center" }}
+        justifyContent="space-between"
+      >
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems="center">
+          <TextField
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(e) => setQuery(e.target.value)}
             placeholder="Search users..."
-            className="h-9 w-56 rounded-lg border border-slate-700 bg-slate-200 px-3 text-sm text-slate-700 placeholder:text-slate-500  focus:outline-none"
+            size="small"
+            sx={{ width: 260 }}
           />
-          <button
+
+          <Button
+            variant="contained"
             onClick={load}
-            className="h-9 rounded-lg border border-slate-700 bg-slate-900 px-3 text-sm text-slate-200 hover:border-white"
+            disabled={loading}
+            sx={{ textTransform: "none" }}
           >
             Refresh
-          </button>
-          <button
+          </Button>
+
+          <Button
+            variant="contained"
             onClick={() => {
               setMode("create");
               setSelectedUser(null);
               setOpenCreate(true);
             }}
-            className="h-9 rounded-lg border border-slate-700 bg-slate-900 px-3 text-sm text-slate-200 hover:border-white"
+            sx={{ textTransform: "none" }}
           >
             Create User
-          </button>
-          <label className="flex items-center gap-2 text-sm text-slate-700">
-            <Checkbox
-              checked={showUsersActive}
-              onCheckedChange={(value) => handleCheckboxChange(value === true)}
-            />
-            {showUsersActive === true ? 'Actives': 'Desactives'}
-          </label>
-        </div>
-        <p className="text-xs text-slate-700">
-          {filtered.length} user{filtered.length === 1 ? "" : "s"}
-        </p>
-      </div>
+          </Button>
 
-      <div className="mt-4 overflow-hidden rounded-xl border border-slate-800">
-        <table className="min-w-full text-left text-sm">
-          <thead className="bg-slate-900 text-xs uppercase tracking-wide text-slate-100">
-            <tr>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Email</th>
-              <th className="px-4 py-3">Role</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Options</th>
-              <th className="px-4 py-3">Created At</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-800">
+          <FormControlLabel
+            label={showUsersActive ? "Actives" : "Desactives"}
+            control={
+              <Checkbox
+                checked={showUsersActive}
+                onChange={(e) => handleCheckboxChange(e.target.checked)}
+              />
+            }
+          />
+        </Stack>
+
+        <Typography variant="caption" color="text.secondary">
+          {filtered.length} user{filtered.length === 1 ? "" : "s"}
+        </Typography>
+      </Stack>
+
+      <TableContainer component={Paper} sx={{ mt: 2, borderRadius: 2, overflow: "hidden" }}>
+        <Table size="small">
+          <TableHead>
+            <TableRow sx={{ bgcolor: "grey.900" }}>
+              {["Name", "Email", "Role", "Status", "Options", "Created At"].map((h) => (
+                <TableCell key={h} sx={{ color: "grey.100", fontWeight: 700 }}>
+                  {h}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
             {loading && (
-              <tr>
-                <td className="px-4 py-5 text-slate-400" colSpan={4}>
+              <TableRow>
+                <TableCell colSpan={6} sx={{ py: 2, color: "text.secondary" }}>
                   Loading users...
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
+
             {!loading && error && (
-              <tr>
-                <td className="px-4 py-5 text-rose-300" colSpan={4}>
+              <TableRow>
+                <TableCell colSpan={6} sx={{ py: 2, color: "error.main" }}>
                   {error}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
+
             {!loading && !error && pageRows.length === 0 && (
-              <tr>
-                <td className="px-4 py-5 text-slate-700" colSpan={4}>
+              <TableRow>
+                <TableCell colSpan={6} sx={{ py: 2, color: "text.secondary" }}>
                   No users found.
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
+
             {!loading &&
               !error &&
               pageRows.map((user) => {
                 const nameLabel = user.user_name || "-";
                 const emailLabel = user.user_email || "-";
                 const roleLabel = user.rol || "-";
-				const stateLabel = user.user_deleted === false ? 'Active' : 'Desactive';
+                const stateLabel = user.user_deleted === false ? "Active" : "Desactive";
                 const createdAtLabel = user.user_created_at
-                ? new Intl.DateTimeFormat("es-ES", {
-                    dateStyle: "short",
-                    timeStyle: "short",
-                  }).format(new Date(user.user_created_at))
-                : "-";
-      
+                  ? new Intl.DateTimeFormat("es-ES", {
+                      dateStyle: "short",
+                      timeStyle: "short",
+                    }).format(new Date(user.user_created_at))
+                  : "-";
+
                 return (
-                  <tr key={user.user_id} className="hover:bg-slate-500/60">
-                    <td className="px-4 py-3 text-black">{nameLabel}</td>
-                    <td className="px-4 py-3 text-black">{emailLabel}</td>
-                    <td className="px-4 py-3 text-black">{roleLabel}</td>
-                    <td className="px-4 py-3 text-black">{stateLabel}</td>
-                    <td className="flex">
-                     {showUsersActive ? (
-                        <Button
-                          onClick={() => handleDeleteUser(user.user_id)}
-                          className={cn(
-                            "h-6 transition-all mt-2 mx-2 hover:scale-[1.02] cursor-pointer",
-                            "bg-red-500 hover:bg-red-600 text-black hover:text-white"
-                          )}
+                  <TableRow key={user.user_id} hover>
+                    <TableCell>{nameLabel}</TableCell>
+                    <TableCell>{emailLabel}</TableCell>
+                    <TableCell>{roleLabel}</TableCell>
+                    <TableCell>{stateLabel}</TableCell>
+
+                    <TableCell>
+                      <Stack direction="row" spacing={1}>
+                        {showUsersActive ? (
+                          <IconButton
+                            onClick={() => handleDeleteUser(user.user_id)}
+                            disabled={loading}
+                            size="small"
+                            sx={{
+                              bgcolor: "error.main",
+                              "&:hover": { bgcolor: "error.dark" },
+                              color: "common.white",
+                            }}
+                          >
+                            <Beer size={18} />
+                          </IconButton>
+                        ) : (
+                          <IconButton
+                            onClick={() => handleRestoreUser(user.user_id)}
+                            disabled={loading}
+                            size="small"
+                            sx={{
+                              bgcolor: "grey.200",
+                              "&:hover": { bgcolor: "grey.300" },
+                              color: "text.primary",
+                            }}
+                          >
+                            <RotateCcw size={18} />
+                          </IconButton>
+                        )}
+
+                        <IconButton
+                          onClick={() => {
+                            setMode("edit");
+                            setSelectedUser({
+                              id: user.user_id,
+                              name: user.user_name,
+                              email: user.user_email,
+                              deleted: user.user_deleted,
+                              avatarUrl: "",
+                              createdAt: user.user_created_at,
+                              role: { id: user.roleId, description: user.rol },
+                            });
+                            setOpenCreate(true);
+                          }}
+                          size="small"
+                          sx={{
+                            bgcolor: "warning.main",
+                            "&:hover": { bgcolor: "warning.dark" },
+                            color: "common.black",
+                          }}
                         >
-                          <Beer />
-                        </Button>
-                      ) : (
-						<Button
-						onClick={() => handleRestoreUser(user.user_id)}
-						className={cn(
-							"h-6 transition-all mt-2 mx-2 hover:scale-[1.02] cursor-pointer",
-							"bg-gray-200 hover:bg-gray-300 text-gray-600"
-						)}
-						>
-						<RotateCcw className="h-4 w-4" />
-						</Button>
-                      )}
-                      <Button className={cn("cursor-pointer mt-2 bg-yellow-500 h-6 hover:bg-yellow-600 text-black hover:text-white hover:scale-[1.02] transition-all")} onClick={() => {
-                        setMode("edit");
-                          setSelectedUser({
-                            id: user.user_id,
-                            name: user.user_name,
-                            email: user.user_email,
-                            deleted: user.user_deleted,
-                            avatarUrl: "",
-                            createdAt: user.user_created_at,
-                            role: { id: user.roleId , description: user.rol },
-                          });
-                        setOpenCreate(true);
-                      }}>
-                        <Pencil />
-                      </Button>
-                    </td>
-                    <td className="px-4 py-3 text-black">{createdAtLabel}</td>
-                  </tr>
+                          <Pencil size={18} />
+                        </IconButton>
+                      </Stack>
+                    </TableCell>
+
+                    <TableCell>{createdAtLabel}</TableCell>
+                  </TableRow>
                 );
               })}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-      <div className="mt-3 flex items-center justify-between text-xs text-slate-100">
-        <span>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 2 }}>
+        <Typography variant="caption" color="text.secondary">
           Page {safePage} of {totalPages}
-        </span>
-        <div className="flex items-center gap-2">
-          <button 
+        </Typography>
+
+        <Stack direction="row" spacing={1}>
+          <Button
+            variant="outlined"
             onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-            disabled={safePage === 1}
-            className=" rounded-md cursor-pointer border border-slate-800 px-2 py-1 disabled:opacity-40"
+            disabled={safePage === 1 || loading}
+            sx={{ textTransform: "none" }}
           >
-            <span className="text-black">Prev</span>
-          </button>
-          <button
+            Prev
+          </Button>
+          <Button
+            variant="outlined"
             onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-            disabled={safePage === totalPages}
-            className=" rounded-md cursor-pointer border border-slate-800 px-2 py-1 disabled:opacity-40"
+            disabled={safePage === totalPages || loading}
+            sx={{ textTransform: "none" }}
           >
-            <span className="text-black">Next</span>
-          </button>
-        </div>
-      </div>
-    </div>
+            Next
+          </Button>
+        </Stack>
+      </Stack>
+    </Box>
   );
 }

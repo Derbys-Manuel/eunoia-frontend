@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import LoginForm from "../../components/login-form";
+import LoginForm from "./login-form";
+import { Box } from "@mui/material";
 
 export default function LoginPage() {
   useEffect(() => {
@@ -14,8 +15,8 @@ export default function LoginPage() {
   }, []);
 
   return (
-    <div className="h-screen overflow-hidden">
+    <Box sx={{ height: "100vh", overflow: "hidden" }}>
       <LoginForm />
-    </div>
+    </Box>
   );
 }
