@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { styled, useTheme, type Theme, type CSSObject } from "@mui/material/styles";
+import { styled, type Theme, type CSSObject } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import MuiDrawer from "@mui/material/Drawer";
 import MuiAppBar, { type AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
@@ -9,17 +9,16 @@ import List from "@mui/material/List";
 import CssBaseline from "@mui/material/CssBaseline";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
-import IconButton from "@mui/material/IconButton";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
+import Collapse from "@mui/material/Collapse";
 
-import MenuIcon from "@mui/icons-material/Menu";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-import { HomeIcon, UsersIcon, LogOutIcon } from "lucide-react";
+import { HomeIcon, UsersIcon, LogOutIcon, UserCircle2 } from "lucide-react";
 
 import { useFlashMessage } from "@/hooks/useFlashMessage";
 import { useAuth } from "@/hooks/useAuth";
@@ -104,32 +103,32 @@ function formatRole(role?: string) {
 function getPageTitle(pathname: string) {
   if (pathname === RoutesPaths.home || pathname === "/") return "Dashboard";
   if (pathname.startsWith(RoutesPaths.users)) return "Users";
-  // fallback: último segmento
   const seg = pathname.split("/").filter(Boolean).at(-1) ?? "";
   return seg ? seg.charAt(0).toUpperCase() + seg.slice(1) : "Dashboard";
 }
 
 type NavItem = {
+  key: string;
   label: string;
   tooltip: string;
   path?: string;
   icon: React.ReactNode;
   onClick?: () => void;
   isActive?: boolean;
+  children?: NavItem[];
 };
 
 export default function HomePage() {
-  const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
 
   const { showFlash, clearFlash } = useFlashMessage();
   const { logout, userName, userRole } = useAuth();
 
-  const [open, setOpen] = React.useState(false);
+  const [openSections, setOpenSections] = React.useState<Record<string, boolean>>({});
 
-  const handleDrawerOpen = () => setOpen(true);
-  const handleDrawerClose = () => setOpen(false);
+  const handleToggleSection = (key: string) =>
+    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const handleLogout = async () => {
     clearFlash();
@@ -141,9 +140,17 @@ export default function HomePage() {
       showFlash(errorResponse("No se pudo cerrar la sesión"));
     }
   };
+  const isUsersActive = location.pathname.startsWith(RoutesPaths.users);
+
+  React.useEffect(() => {
+    if (isUsersActive) {
+      setOpenSections((prev) => ({ ...prev, users: true }));
+    }
+  }, [isUsersActive]);
 
   const navItems: NavItem[] = [
     {
+      key: "dashboard",
       label: "Dashboard",
       tooltip: "Dashboard",
       path: RoutesPaths.home,
@@ -152,34 +159,45 @@ export default function HomePage() {
       onClick: () => navigate(RoutesPaths.home),
     },
     {
+      key: "users",
       label: "Users",
       tooltip: "Users",
       path: RoutesPaths.users,
       icon: <UsersIcon size={18} />,
-      isActive: location.pathname.startsWith(RoutesPaths.users),
-      onClick: () => navigate(RoutesPaths.users),
+      isActive: isUsersActive,
+      children: [
+        {
+          key: "users-list",
+          label: "All users",
+          tooltip: "All users",
+          path: RoutesPaths.users,
+          icon: null,
+          isActive: location.pathname === RoutesPaths.users,
+          onClick: () => navigate(RoutesPaths.users),
+        },
+        {
+          key: "users-new",
+          label: "Create",
+          tooltip: "Create",
+          path: RoutesPaths.users,
+          icon: null,
+          isActive: false,
+          onClick: () => navigate(RoutesPaths.createUser),
+        },
+      ],
     },
   ];
 
   const title = getPageTitle(location.pathname);
+  const isDrawerOpen = true;
 
   return (
     <Box sx={{ display: "flex", width: "100%" }}>
       <CssBaseline />
 
-      <AppBar position="fixed" open={open}>
+      <AppBar position="fixed" open={isDrawerOpen}>
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           <Box sx={{ display: "flex", alignItems: "center" }}>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              onClick={handleDrawerOpen}
-              edge="start"
-              sx={{ mr: 2, ...(open && { display: "none" }) }}
-            >
-              <MenuIcon />
-            </IconButton>
-
             <Typography variant="h6" noWrap component="div">
               {title}
             </Typography>
@@ -194,7 +212,7 @@ export default function HomePage() {
         </Toolbar>
       </AppBar>
 
-      <Drawer variant="permanent" open={open}>
+      <Drawer variant="permanent" open={isDrawerOpen}>
         <DrawerHeader sx={{ justifyContent: "space-between" }}>
           <Box sx={{ pl: 1.5, display: "flex", flexDirection: "column" }}>
             <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.1 }}>
@@ -204,41 +222,73 @@ export default function HomePage() {
               admin@eunoia
             </Typography>
           </Box>
-
-          <IconButton onClick={handleDrawerClose}>
-            {theme.direction === "rtl" ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-          </IconButton>
         </DrawerHeader>
 
         <Divider />
 
         <List>
-          {navItems.map((item) => (
-            <ListItem key={item.label} disablePadding sx={{ display: "block" }}>
-              <ListItemButton
-                onClick={item.onClick}
-                selected={!!item.isActive}
-                sx={[
-                  { minHeight: 48, px: 2.5 },
-                  open ? { justifyContent: "initial" } : { justifyContent: "center" },
-                ]}
+          {navItems.map((item) => {
+            const isSectionOpen = !!openSections[item.key];
+            const hasChildren = !!item.children?.length;
+
+            return (
+              <ListItem
+                key={item.key}
+                disablePadding
+                sx={{ display: "block" }}
+                component={hasChildren ? "div" : "li"}
               >
-                <ListItemIcon
+                <ListItemButton
+                  onClick={hasChildren ? () => handleToggleSection(item.key) : item.onClick}
+                  selected={!!item.isActive}
                   sx={[
-                    { minWidth: 0, justifyContent: "center" },
-                    open ? { mr: 3 } : { mr: "auto" },
+                    { minHeight: 48, px: 2.5 },
+                    isDrawerOpen ? { justifyContent: "initial" } : { justifyContent: "center" },
                   ]}
                 >
-                  {item.icon}
-                </ListItemIcon>
+                  <ListItemIcon
+                    sx={[
+                      { minWidth: 0, justifyContent: "center" },
+                      isDrawerOpen ? { mr: 3 } : { mr: "auto" },
+                    ]}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
 
-                <ListItemText
-                  primary={item.label}
-                  sx={[open ? { opacity: 1 } : { opacity: 0 }]}
-                />
-              </ListItemButton>
-            </ListItem>
-          ))}
+                  <ListItemText
+                    primary={item.label}
+                    sx={[isDrawerOpen ? { opacity: 1 } : { opacity: 0 }]}
+                  />
+
+                  {hasChildren && isDrawerOpen ? (
+                    isSectionOpen ? (
+                      <ExpandLessIcon fontSize="small" />
+                    ) : (
+                      <ExpandMoreIcon fontSize="small" />
+                    )
+                  ) : null}
+                </ListItemButton>
+
+                {hasChildren ? (
+                  <Collapse in={isDrawerOpen && isSectionOpen} timeout="auto" unmountOnExit>
+                    <List component="div" disablePadding>
+                      {item.children?.map((child) => (
+                        <ListItem key={child.key} disablePadding>
+                          <ListItemButton
+                            onClick={child.onClick}
+                            selected={!!child.isActive}
+                            sx={{ pl: 7, minHeight: 40 }}
+                          >
+                            <ListItemText primary={child.label} />
+                          </ListItemButton>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Collapse>
+                ) : null}
+              </ListItem>
+            );
+          })}
         </List>
 
         <Divider />
@@ -246,21 +296,46 @@ export default function HomePage() {
         <List sx={{ mt: "auto" }}>
           <ListItem disablePadding sx={{ display: "block" }}>
             <ListItemButton
-              onClick={handleLogout}
+              onClick={()=>{ navigate(RoutesPaths.profileUser)}}
               sx={[
                 { minHeight: 48, px: 2.5 },
-                open ? { justifyContent: "initial" } : { justifyContent: "center" },
+                isDrawerOpen ? { justifyContent: "initial" } : { justifyContent: "center" },
               ]}
             >
               <ListItemIcon
                 sx={[
                   { minWidth: 0, justifyContent: "center" },
-                  open ? { mr: 3 } : { mr: "auto" },
+                  isDrawerOpen ? { mr: 3 } : { mr: "auto" },
+                ]}
+              >
+                <UserCircle2 size={18} />
+              </ListItemIcon>
+              <ListItemText
+                primary="Profile"
+                sx={[isDrawerOpen ? { opacity: 1 } : { opacity: 0 }]}
+              />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding sx={{ display: "block" }}>
+            <ListItemButton
+              onClick={handleLogout}
+              sx={[
+                { minHeight: 48, px: 2.5 },
+                isDrawerOpen ? { justifyContent: "initial" } : { justifyContent: "center" },
+              ]}
+            >
+              <ListItemIcon
+                sx={[
+                  { minWidth: 0, justifyContent: "center" },
+                  isDrawerOpen ? { mr: 3 } : { mr: "auto" },
                 ]}
               >
                 <LogOutIcon size={18} />
               </ListItemIcon>
-              <ListItemText primary="Logout" sx={[open ? { opacity: 1 } : { opacity: 0 }]} />
+              <ListItemText
+                primary="Logout"
+                sx={[isDrawerOpen ? { opacity: 1 } : { opacity: 0 }]}
+              />
             </ListItemButton>
           </ListItem>
         </List>

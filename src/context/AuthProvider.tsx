@@ -39,7 +39,6 @@ export const AuthProvider = ({ children }: PropsUrl) => {
       }
       const response = await findOwnUser();
       const user = response?.data ?? response ?? {};
-      console.log("Usuario autenticado:", user);
       const rawRoleValue =
         user?.rol ??
         user?.role?.description ??

@@ -1,5 +1,4 @@
-// src/pages/users/UserPage.tsx
-import UsersTable from "./partiels/UsersTable";
+import UsersTable from "../components/UsersTable";
 import { Box, Typography } from "@mui/material";
 
 export default function UserPage() {
