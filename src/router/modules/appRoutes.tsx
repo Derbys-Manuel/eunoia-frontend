@@ -8,9 +8,10 @@ import { Suspense, lazy } from "react";
 
 const Dashboard = lazy(() => import("../../pages/dashboard/Dashboard"));
 const ErrorPage = lazy(() => import("../../pages/Error404"));
-const UsersPage = lazy(() => import("../../pages/users/UserPage"));
+const UsersPage = lazy(() => import("../../pages/users/listAll/ListAll"));
 const AccessDenied = lazy(() => import("../../pages/AccessDenied"));
-
+const CreateUser = lazy(()=> import("../../pages/users/create/CreateUserPage"));
+const ProfileUser = lazy(() => import("../../pages/users/profile/Profile"));
 const suspenseFallback = <div className="p-4">Cargando...</div>;
 
 export const appRoutes: RouteObject[] = [
@@ -38,6 +39,14 @@ export const appRoutes: RouteObject[] = [
         ),
       },
       {
+        path: RoutesPaths.denied,
+        element: (
+          <Suspense fallback={suspenseFallback}>
+            <AccessDenied />
+          </Suspense>
+        ),
+      },
+      {
         path: RoutesPaths.users,
         element: (
           <Suspense fallback={suspenseFallback}>
@@ -46,10 +55,18 @@ export const appRoutes: RouteObject[] = [
         ),
       },
       {
-        path: RoutesPaths.denied,
+        path: RoutesPaths.createUser,
         element: (
           <Suspense fallback={suspenseFallback}>
-            <AccessDenied />
+            <CreateUser />
+          </Suspense>
+        ),
+      },
+      {
+        path: RoutesPaths.profileUser,
+        element: (
+          <Suspense fallback={suspenseFallback}>
+            <ProfileUser  />
           </Suspense>
         ),
       },

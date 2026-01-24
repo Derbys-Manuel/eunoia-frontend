@@ -6,9 +6,10 @@ import {
   findDesactive,
   restoreUser,
 } from "@/services/userService";
-import ModalCreate from "./ModalCreate";
 import { errorResponse, successResponse } from "@/common/utils/response";
 import { useFlashMessage } from "@/hooks/useFlashMessage";
+import { RoutesPaths } from "@/router/config/routesPaths";
+import { useNavigate } from "react-router-dom";
 
 import {
   Box,
@@ -48,12 +49,10 @@ export default function UsersTable() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
-  const [openCreate, setOpenCreate] = useState(false);
-  const [mode, setMode] = useState<"create" | "edit">("create");
-  const [selectedUser, setSelectedUser] = useState<any>(null);
   const [showUsersActive, setShowUsersActive] = useState(true);
 
   const { showFlash, clearFlash } = useFlashMessage();
+  const navigate = useNavigate();
 
   const load = async () => {
     try {
@@ -167,14 +166,6 @@ export default function UsersTable() {
 
   return (
     <Box>
-      <ModalCreate
-        open={openCreate}
-        onClose={() => setOpenCreate(false)}
-        onDone={load}
-        mode={mode}
-        user={selectedUser}
-      />
-
       <Stack
         direction={{ xs: "column", md: "row" }}
         spacing={2}
@@ -189,28 +180,14 @@ export default function UsersTable() {
             size="small"
             sx={{ width: 260 }}
           />
-
           <Button
-            variant="contained"
+            className="w-2"
             onClick={load}
             disabled={loading}
             sx={{ textTransform: "none" }}
           >
-            Refresh
+            <RotateCcw size={18}/>
           </Button>
-
-          <Button
-            variant="contained"
-            onClick={() => {
-              setMode("create");
-              setSelectedUser(null);
-              setOpenCreate(true);
-            }}
-            sx={{ textTransform: "none" }}
-          >
-            Create User
-          </Button>
-
           <FormControlLabel
             label={showUsersActive ? "Actives" : "Desactives"}
             control={
@@ -317,17 +294,20 @@ export default function UsersTable() {
 
                         <IconButton
                           onClick={() => {
-                            setMode("edit");
-                            setSelectedUser({
-                              id: user.user_id,
-                              name: user.user_name,
-                              email: user.user_email,
-                              deleted: user.user_deleted,
-                              avatarUrl: "",
-                              createdAt: user.user_created_at,
-                              role: { id: user.roleId, description: user.rol },
+                            navigate(RoutesPaths.createUser, {
+                              state: {
+                                mode: "edit",
+                                user: {
+                                  id: user.user_id,
+                                  name: user.user_name,
+                                  email: user.user_email,
+                                  deleted: user.user_deleted,
+                                  avatarUrl: "",
+                                  createdAt: user.user_created_at,
+                                  role: { id: user.roleId, description: user.rol },
+                                },
+                              },
                             });
-                            setOpenCreate(true);
                           }}
                           size="small"
                           sx={{

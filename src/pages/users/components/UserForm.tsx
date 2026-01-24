@@ -28,19 +28,25 @@ interface User {
 
 interface UserFormProps {
   user?: User;
-  onSubmit: (data: UserFormData) => void;
+  onSubmit: (data: UserFormData) => Promise<{ type: string; message?: string } | void>;
   formId?: string;
+  resetOnSubmit?: boolean;
 }
 
 type UserFormData = UpdateUserDto & { avatarUrl?: string };
 
-export const UserForm: React.FC<UserFormProps> = ({ user, onSubmit, formId }) => {
+export const UserForm: React.FC<UserFormProps> = ({
+  user,
+  onSubmit,
+  formId,
+}) => {
   const [roles, setRoles] = useState<any[]>([]);
 
   const {
     register,
     handleSubmit,
     setError,
+    reset,
     control,
     formState: { errors },
   } = useForm<UserFormData>({
@@ -67,7 +73,16 @@ export const UserForm: React.FC<UserFormProps> = ({ user, onSubmit, formId }) =>
 
   const onSubmitForm = async (data: UserFormData) => {
     try {
-      await onSubmit(data);
+      const res = await onSubmit(data);
+      if (res?.type === "success") {
+        reset({
+          name: "",
+          email: "",
+          password: "",
+          roleId: "",
+          avatarUrl: "",
+        });
+      }
     } catch (error: any) {
       const message: string | undefined =
         error?.response?.data?.message || error?.message;
@@ -116,17 +131,18 @@ export const UserForm: React.FC<UserFormProps> = ({ user, onSubmit, formId }) =>
         error={!!errors.email}
         helperText={errors.email?.message}
       />
-
-      <TextField
-        label="Contraseña"
-        placeholder="Contraseña"
-        type="password"
-        size="small"
-        fullWidth
-        {...register("password" as any)}
-        error={!!errors.password}
-        helperText={errors.password?.message}
-      />
+      {!user && (
+        <TextField
+          label="Contraseña"
+          placeholder="Contraseña"
+          type="password"
+          size="small"
+          fullWidth
+          {...register("password" as any)}
+          error={!!errors.password}
+          helperText={errors.password?.message}
+        />
+      )}
 
       <FormControl size="small" fullWidth error={!!errors.roleId}>
         <InputLabel id="roleId-label">Rol</InputLabel>

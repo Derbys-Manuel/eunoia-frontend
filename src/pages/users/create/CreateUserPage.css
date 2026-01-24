@@ -1,0 +1,5 @@
+.container{
+    max-width: 500px;
+    border: 2px black solid;
+    flex-direction: row;
+}
